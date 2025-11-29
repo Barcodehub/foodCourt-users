@@ -1,0 +1,270 @@
+openapi: 3.0.3
+info:
+  title: PowerUp Management API
+  description: API para gestión de objetos - Generación automática de DTOs con OpenAPI
+  version: 1.0.0
+  contact:
+    name: Pragma PowerUp Team
+
+servers:
+  - url: http://localhost:8081
+    description: Servidor local de desarrollo
+
+tags:
+  - name: Objects
+    description: Operaciones relacionadas con objetos
+
+paths:
+  /api/v1/objects:
+    get:
+      tags:
+        - Objects
+      summary: Obtener lista de objetos
+      description: Retorna una lista de todos los objetos disponibles
+      operationId: getAllObjects
+      responses:
+        '200':
+          description: Lista de objetos obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ObjectResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - Objects
+      summary: Crear un nuevo objeto
+      description: Crea un nuevo objeto en el sistema
+      operationId: createObject
+      requestBody:
+        description: Datos del objeto a crear
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ObjectRequest'
+      responses:
+        '201':
+          description: Objeto creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectResponse'
+        '400':
+          description: Datos de entrada inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/objects/{id}:
+    get:
+      tags:
+        - Objects
+      summary: Obtener objeto por ID
+      description: Retorna un objeto específico basado en su ID
+      operationId: getObjectById
+      parameters:
+        - name: id
+          in: path
+          description: ID del objeto a buscar
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Objeto encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectResponse'
+        '404':
+          description: Objeto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags:
+        - Objects
+      summary: Actualizar un objeto
+      description: Actualiza los datos de un objeto existente
+      operationId: updateObject
+      parameters:
+        - name: id
+          in: path
+          description: ID del objeto a actualizar
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Nuevos datos del objeto
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ObjectRequest'
+      responses:
+        '200':
+          description: Objeto actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectResponse'
+        '404':
+          description: Objeto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Objects
+      summary: Eliminar un objeto
+      description: Elimina un objeto del sistema
+      operationId: deleteObject
+      parameters:
+        - name: id
+          in: path
+          description: ID del objeto a eliminar
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Objeto eliminado exitosamente
+        '404':
+          description: Objeto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    ObjectRequest:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          description: Nombre del objeto
+          minLength: 1
+          maxLength: 100
+          example: "Objeto de ejemplo"
+        description:
+          type: string
+          description: Descripción del objeto
+          minLength: 1
+          maxLength: 500
+          example: "Esta es una descripción de ejemplo"
+        category:
+          type: string
+          description: Categoría del objeto
+          maxLength: 50
+          example: "Categoría A"
+        active:
+          type: boolean
+          description: Indica si el objeto está activo
+          default: true
+          example: true
+
+    ObjectResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID único del objeto
+          example: 1
+        name:
+          type: string
+          description: Nombre del objeto
+          example: "Objeto de ejemplo"
+        description:
+          type: string
+          description: Descripción del objeto
+          example: "Esta es una descripción de ejemplo"
+        category:
+          type: string
+          description: Categoría del objeto
+          example: "Categoría A"
+        active:
+          type: boolean
+          description: Indica si el objeto está activo
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha de creación del objeto
+          example: "2025-11-29T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Fecha de última actualización
+          example: "2025-11-29T10:30:00Z"
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp del error
+          example: "2025-11-29T10:30:00Z"
+        status:
+          type: integer
+          description: Código de estado HTTP
+          example: 400
+        error:
+          type: string
+          description: Tipo de error
+          example: "Bad Request"
+        message:
+          type: string
+          description: Mensaje descriptivo del error
+          example: "El campo 'name' es requerido"
+        path:
+          type: string
+          description: Path de la petición que causó el error
+          example: "/api/v1/objects"
+
