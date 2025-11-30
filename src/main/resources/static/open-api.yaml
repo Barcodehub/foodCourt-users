@@ -10,54 +10,29 @@ servers:
   - url: http://localhost:8081
     description: Servidor local de desarrollo
 
-tags:
-  - name: Objects
-    description: Operaciones relacionadas con objetos
 
 paths:
-  /api/v1/objects:
-    get:
-      tags:
-        - Objects
-      summary: Obtener lista de objetos
-      description: Retorna una lista de todos los objetos disponibles
-      operationId: getAllObjects
-      responses:
-        '200':
-          description: Lista de objetos obtenida exitosamente
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ObjectResponse'
-        '500':
-          description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
+  /users:
     post:
       tags:
-        - Objects
-      summary: Crear un nuevo objeto
-      description: Crea un nuevo objeto en el sistema
-      operationId: createObject
+        - Users
+      summary: Crear un nuevo usuario
+      description: Crea un nuevo usuario en el sistema
+      operationId: createUser
       requestBody:
         description: Datos del objeto a crear
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ObjectRequest'
+              $ref: '#/components/schemas/UserRequest'
       responses:
         '201':
           description: Objeto creado exitosamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ObjectResponse'
+                $ref: '#/components/schemas/UserResponse'
         '400':
           description: Datos de entrada inválidos
           content:
@@ -71,144 +46,57 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/v1/objects/{id}:
-    get:
-      tags:
-        - Objects
-      summary: Obtener objeto por ID
-      description: Retorna un objeto específico basado en su ID
-      operationId: getObjectById
-      parameters:
-        - name: id
-          in: path
-          description: ID del objeto a buscar
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: Objeto encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ObjectResponse'
-        '404':
-          description: Objeto no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-    put:
-      tags:
-        - Objects
-      summary: Actualizar un objeto
-      description: Actualiza los datos de un objeto existente
-      operationId: updateObject
-      parameters:
-        - name: id
-          in: path
-          description: ID del objeto a actualizar
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        description: Nuevos datos del objeto
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ObjectRequest'
-      responses:
-        '200':
-          description: Objeto actualizado exitosamente
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ObjectResponse'
-        '404':
-          description: Objeto no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-    delete:
-      tags:
-        - Objects
-      summary: Eliminar un objeto
-      description: Elimina un objeto del sistema
-      operationId: deleteObject
-      parameters:
-        - name: id
-          in: path
-          description: ID del objeto a eliminar
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '204':
-          description: Objeto eliminado exitosamente
-        '404':
-          description: Objeto no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   schemas:
-    ObjectRequest:
+    UserRequest:
       type: object
-      required:
-        - name
-        - description
       properties:
         name:
           type: string
-          description: Nombre del objeto
           minLength: 1
           maxLength: 100
-          example: "Objeto de ejemplo"
-        description:
+          example: "Juan"
+        lastName:
           type: string
-          description: Descripción del objeto
           minLength: 1
-          maxLength: 500
-          example: "Esta es una descripción de ejemplo"
-        category:
+          maxLength: 100
+          example: "Pérez"
+        password:
           type: string
-          description: Categoría del objeto
-          maxLength: 50
-          example: "Categoría A"
-        active:
-          type: boolean
-          description: Indica si el objeto está activo
-          default: true
-          example: true
+          minLength: 8
+          maxLength: 100
+          example: "MiClaveSegura123"
+        email:
+          type: string
+          format: email
+          example: "juan.perez@email.com"
+        identificationDocument:
+          type: string
+          pattern: '^[0-9]+$'
+          maxLength: 20
+          example: "1234567890"
+        phoneNumber:
+          type: string
+          maxLength: 14
+          pattern: '^\+?[0-9]{1,13}$'
+          example: "+573005698325"
+        birthDate:
+          type: string
+          format: date
+          example: "1990-01-01"
+        role:
+          type: string
+      required:
+        - name
+        - lastName
+        - password
+        - email
+        - identificationDocument
+        - phoneNumber
+        - birthDate
 
-    ObjectResponse:
+    UserResponse:
       type: object
       properties:
         id:
@@ -220,28 +108,14 @@ components:
           type: string
           description: Nombre del objeto
           example: "Objeto de ejemplo"
-        description:
+        lastName:
           type: string
           description: Descripción del objeto
-          example: "Esta es una descripción de ejemplo"
-        category:
+          example: "Apellido"
+        email:
           type: string
-          description: Categoría del objeto
-          example: "Categoría A"
-        active:
-          type: boolean
-          description: Indica si el objeto está activo
-          example: true
-        createdAt:
-          type: string
-          format: date-time
-          description: Fecha de creación del objeto
-          example: "2025-11-29T10:30:00Z"
-        updatedAt:
-          type: string
-          format: date-time
-          description: Fecha de última actualización
-          example: "2025-11-29T10:30:00Z"
+          description: Descripción del objeto
+          example: "email@email.com"
 
     ErrorResponse:
       type: object

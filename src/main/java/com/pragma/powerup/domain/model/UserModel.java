@@ -5,18 +5,26 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ObjectModel {
+public class UserModel {
+
     private Long id;
+
     private String name;
-    private String description;
-    private String category;
-    private Boolean active;
+    private String lastName;
+    private String password;
+    private String email;
+    private String identificationDocument;
+    private String phoneNumber;
+    private LocalDate birthDate;
+    private String role;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private UserModel createdBy;
+
 }
