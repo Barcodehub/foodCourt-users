@@ -5,6 +5,9 @@ import com.pragma.powerup.infrastructure.exception.NoDataFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -51,24 +54,21 @@ public class ControllerAdvisor {
             DataIntegrityViolationException exception) {
         Map<String, Object> response = new HashMap<>();
         response.put(TIMESTAMP, LocalDateTime.now());
-        response.put(STATUS, HttpStatus.CONFLICT.value());
-        response.put(ERROR, "Data Integrity Violation");
 
-        // Detectar tipo de duplicado basado en el mensaje de la excepción
-        String message = ExceptionResponse.DUPLICATE_USER_DATA.getMessage();
-        String exceptionMessage = exception.getMessage();
+        // Obtener el mensaje más específico de la causa raíz
+        String message = exception.getMostSpecificCause().getMessage();
+        HttpStatus status = HttpStatus.CONFLICT;
 
-        if (exceptionMessage != null) {
-            if (exceptionMessage.contains("email")) {
-                message = ExceptionResponse.EMAIL_ALREADY_EXISTS.getMessage();
-            } else if (exceptionMessage.contains("identification_document")) {
-                message = ExceptionResponse.IDENTIFICATION_ALREADY_EXISTS.getMessage();
-            }
+        // Si es un error de NOT NULL, cambiar el status a BAD_REQUEST
+        if (message != null && (message.toLowerCase().contains("not null") || message.toLowerCase().contains("no nulo"))) {
+            status = HttpStatus.BAD_REQUEST;
         }
 
+        response.put(STATUS, status.value());
+        response.put(ERROR, "Data Integrity Violation");
         response.put(MESSAGE, message);
 
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        return ResponseEntity.status(status).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -89,6 +89,42 @@ public class ControllerAdvisor {
         response.put("errors", errors);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Map<String, Object>> handleBadCredentialsException(
+            BadCredentialsException exception) {
+        Map<String, Object> response = new HashMap<>();
+        response.put(TIMESTAMP, LocalDateTime.now());
+        response.put(STATUS, HttpStatus.UNAUTHORIZED.value());
+        response.put(ERROR, "Authentication Failed");
+        response.put(MESSAGE, "Credenciales inválidas");
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthenticationException(
+            AuthenticationException exception) {
+        Map<String, Object> response = new HashMap<>();
+        response.put(TIMESTAMP, LocalDateTime.now());
+        response.put(STATUS, HttpStatus.UNAUTHORIZED.value());
+        response.put(ERROR, "Authentication Failed");
+        response.put(MESSAGE, "Error de autenticación: " + exception.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDeniedException(
+            AccessDeniedException exception) {
+        Map<String, Object> response = new HashMap<>();
+        response.put(TIMESTAMP, LocalDateTime.now());
+        response.put(STATUS, HttpStatus.FORBIDDEN.value());
+        response.put(ERROR, "Access Denied");
+        response.put(MESSAGE, exception.getMessage());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
     @ExceptionHandler(Exception.class)

@@ -23,7 +23,7 @@ public class UserModel {
     private String identificationDocument;
     private String phoneNumber;
     private LocalDate birthDate;
-    private String role;
+    private RoleModel role;
     private LocalDateTime createdAt;
     private UserModel createdBy;
 

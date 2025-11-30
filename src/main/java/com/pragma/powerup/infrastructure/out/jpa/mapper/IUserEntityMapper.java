@@ -6,12 +6,13 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {IRoleEntityMapper.class})
 public interface IUserEntityMapper {
 
     @Mapping(target = "createdBy", expression = "java(mapUserIdSimple(entity.getCreatedBy()))")
     UserModel toDomain(UserEntity entity);
-    UserEntity toEntity(UserModel role);
+
+    UserEntity toEntity(UserModel userModel);
 
 
     default UserModel mapUserIdSimple(UserEntity userEntity) {

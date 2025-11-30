@@ -44,8 +44,9 @@ public class UserEntity {
     @Column(nullable = false)
     private LocalDate birthDate;
 
-    @Column(nullable = false, length = 20)
-    private String role;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id", nullable = false)
+    private RoleEntity role;
 
     @CreationTimestamp
     @Column(updatable = false)

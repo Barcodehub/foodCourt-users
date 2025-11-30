@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/foodcourt}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/users}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -20,6 +20,11 @@ spring:
 
 appDescription: "Pragma Powerup"
 appVersion: "1.0.0"
+
+# Configuración de JWT
+jwt:
+  secret: ${JWT_SECRET:mySecretKeyForJWTTokenGenerationPragmaPowerUp2024SecureKey}
+  expiration: ${JWT_EXPIRATION:86400000}  # 24 horas en milisegundos
 
 # Configuración de SpringDoc OpenAPI
 springdoc:
