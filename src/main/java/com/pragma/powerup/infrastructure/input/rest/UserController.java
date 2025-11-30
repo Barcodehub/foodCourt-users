@@ -25,7 +25,7 @@ public class UserController implements UsersApi {
 
     private final IUserHandler userHandler;
 
-    @RequireRole({RoleEnum.ADMINISTRADOR})
+    @RequireRole({RoleEnum.ADMINISTRADOR, RoleEnum.PROPIETARIO})
     @Override
     public ResponseEntity<UserDataResponseDto> createUser(UserRequestDto userRequestDto) {
         UserDataResponseDto response = userHandler.createUser(userRequestDto);

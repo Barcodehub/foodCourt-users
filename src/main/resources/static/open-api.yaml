@@ -264,6 +264,11 @@ components:
           type: string
           format: date
           example: "1990-01-01"
+        roleId:
+          type: integer
+          format: int64
+          description: ID del rol a asignar al usuario
+          example: 2
       required:
         - name
         - lastName
@@ -272,6 +277,7 @@ components:
         - identificationDocument
         - phoneNumber
         - birthDate
+        - roleId
 
     UserResponse:
       type: object

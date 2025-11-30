@@ -1,5 +1,6 @@
 package com.pragma.powerup.infrastructure.exceptionhandler;
 
+import com.pragma.powerup.domain.exception.UnauthorizedRoleCreationException;
 import com.pragma.powerup.domain.exception.UserUnderageException;
 import com.pragma.powerup.infrastructure.exception.NoDataFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -113,6 +114,18 @@ public class ControllerAdvisor {
         response.put(MESSAGE, "Error de autenticación: " + exception.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(UnauthorizedRoleCreationException.class)
+    public ResponseEntity<Map<String, Object>> handleUnauthorizedRoleCreationException(
+            UnauthorizedRoleCreationException exception) {
+        Map<String, Object> response = new HashMap<>();
+        response.put(TIMESTAMP, LocalDateTime.now());
+        response.put(STATUS, HttpStatus.FORBIDDEN.value());
+        response.put(ERROR, "Unauthorized Role Creation");
+        response.put(MESSAGE, exception.getMessage());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
