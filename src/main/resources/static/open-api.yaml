@@ -276,8 +276,6 @@ components:
         - email
         - identificationDocument
         - phoneNumber
-        - birthDate
-        - roleId
 
     UserResponse:
       type: object

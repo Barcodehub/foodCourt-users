@@ -32,20 +32,44 @@ public class UserUseCase implements IUserServicePort {
 
     @Override
     public UserModel createUser(UserModel userModel) {
-        validateAge(userModel.getBirthDate());
 
-        // Validar permisos para crear el tipo de usuario solicitado
+        validAssignedRole(userModel);
+
         validateRoleCreationPermissions(userModel.getRole());
 
         String encodedPassword = passwordEncoderPort.encode(userModel.getPassword());
         userModel.setPassword(encodedPassword);
 
-        // Verificar que el rol exista
-        RoleModel role = rolePersistencePort.findById(userModel.getRole().getId())
-                .orElseThrow(() -> new NoDataFoundException("Rol no encontrado. roleID: " + userModel.getRole().getId()));
-        userModel.setRole(role);
-
         return userPersistencePort.saveUser(userModel);
+    }
+
+    private UserModel validAssignedRole(UserModel userModel) {
+        String currentUserRole = securityContextPort.getCurrentUserRole();
+
+        if (RoleEnum.ADMINISTRADOR.getName().equalsIgnoreCase(currentUserRole)) {
+            RoleModel propietarioRole = rolePersistencePort.findById(RoleEnum.PROPIETARIO.getRoleId())
+                    .orElseThrow(() -> new NoDataFoundException("Rol PROPIETARIO no encontrado. roleID: " + RoleEnum.PROPIETARIO.getRoleId()));
+            userModel.setRole(propietarioRole);
+
+            if (userModel.getBirthDate() == null) {
+                throw new IllegalArgumentException("La fecha de nacimiento es obligatoria para crear un usuario PROPIETARIO");
+            }
+            validateAge(userModel.getBirthDate());
+
+        } else if (RoleEnum.CLIENTE.getName().equalsIgnoreCase(currentUserRole)) {
+            RoleModel clienteRole = rolePersistencePort.findById(RoleEnum.CLIENTE.getRoleId())
+                    .orElseThrow(() -> new NoDataFoundException("Rol CLIENTE no encontrado. roleID: " + RoleEnum.CLIENTE.getRoleId()));
+            userModel.setRole(clienteRole);
+        }
+        else {
+            if (userModel.getRole() == null) {
+                throw new IllegalArgumentException("El rol es obligatorio para crear este tipo de usuario");
+            }
+            RoleModel role = rolePersistencePort.findById(userModel.getRole().getId())
+                    .orElseThrow(() -> new NoDataFoundException("Rol no encontrado. roleID: " + userModel.getRole().getId()));
+            userModel.setRole(role);
+        }
+        return userModel;
     }
 
     @Override
