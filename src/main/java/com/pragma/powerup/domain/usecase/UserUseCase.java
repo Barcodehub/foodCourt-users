@@ -32,13 +32,13 @@ public class UserUseCase implements IUserServicePort {
 
     @Override
     public UserModel createUser(UserModel userModel) {
-
         RoleModel role = rolePersistencePort.findById(userModel.getRole().getId())
                 .orElseThrow(() -> new NoDataFoundException("Rol no encontrado. roleID: " + userModel.getRole().getId()));
         userModel.setRole(role);
 
-        // Validar permisos para crear el tipo de usuario solicitado
-        validateRoleCreationPermissions(role);
+        if (!role.getId().equals(RoleEnum.CLIENTE.getRoleId())) {
+            validateRoleCreationPermissions(role);
+        }
 
         if (role.getId().equals(RoleEnum.PROPIETARIO.getRoleId())) {
             validateAge(userModel.getBirthDate());
