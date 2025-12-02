@@ -34,7 +34,6 @@ public class UserController implements UsersApi {
     @RequireRole({RoleEnum.ADMINISTRADOR})
     @Override
     public ResponseEntity<UsersListResponseDto> getAllUsers(Integer page, Integer size) {
-        // Crear Pageable desde parámetros HTTP (responsabilidad del Controller)
         int pageNumber = page != null ? page : 0;
         int pageSize = size != null ? size : 10;
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -43,7 +42,7 @@ public class UserController implements UsersApi {
         return ResponseEntity.ok(response);
     }
 
-    @RequireRole({RoleEnum.ADMINISTRADOR})
+    @RequireRole({RoleEnum.ADMINISTRADOR, RoleEnum.EMPLEADO})
     @Override
     public ResponseEntity<UserDataResponseDto> getUserById(Long id) {
         UserDataResponseDto response = userHandler.getUserById(id);

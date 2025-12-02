@@ -298,6 +298,9 @@ components:
           type: string
           description: Descripción del objeto
           example: "email@email.com"
+        restaurantWorkId:
+          type: integer
+          format: int64
         role:
           $ref: '#/components/schemas/RoleResponse'
 

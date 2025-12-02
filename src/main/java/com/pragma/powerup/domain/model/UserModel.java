@@ -26,5 +26,6 @@ public class UserModel {
     private RoleModel role;
     private LocalDateTime createdAt;
     private UserModel createdBy;
+    private Long restaurantWorkId;
 
 }
