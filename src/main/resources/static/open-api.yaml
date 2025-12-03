@@ -301,6 +301,10 @@ components:
         restaurantWorkId:
           type: integer
           format: int64
+        phoneNumber:
+          type: string
+          description: Número de teléfono del usuario
+          example: "+573001234567"
         role:
           $ref: '#/components/schemas/RoleResponse'
 
