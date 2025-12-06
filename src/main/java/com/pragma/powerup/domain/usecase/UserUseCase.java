@@ -36,9 +36,8 @@ public class UserUseCase implements IUserServicePort {
                 .orElseThrow(() -> new NoDataFoundException("Rol no encontrado. roleID: " + userModel.getRole().getId()));
         userModel.setRole(role);
 
-        if (!role.getId().equals(RoleEnum.CLIENTE.getRoleId())) {
             validateRoleCreationPermissions(role);
-        }
+
 
         if (role.getId().equals(RoleEnum.PROPIETARIO.getRoleId())) {
             validateAge(userModel.getBirthDate());
@@ -73,17 +72,30 @@ public class UserUseCase implements IUserServicePort {
         }
     }
 
-    /**
-     * Valida que el usuario autenticado tenga permisos para crear el tipo de usuario solicitado
-     * - ADMINISTRADOR puede crear PROPIETARIOS
-     * - PROPIETARIO puede crear EMPLEADOS
-     */
+    private String getCurrentUserRoleSafe() {
+        try {
+            return securityContextPort.getCurrentUserRole();
+        } catch (RuntimeException ex) {
+            return null;
+        }
+    }
+
     private void validateRoleCreationPermissions(RoleModel roleToCreate) {
         if (roleToCreate == null || roleToCreate.getId() == null) {
             throw new IllegalArgumentException("El rol del usuario a crear es requerido");
         }
 
-        String currentUserRole = securityContextPort.getCurrentUserRole();
+        String currentUserRole = getCurrentUserRoleSafe();
+
+        if (currentUserRole == null) {
+            if (roleToCreate.getId().equals(RoleEnum.CLIENTE.getRoleId())) {
+                return;
+            } else {
+                throw new UnauthorizedRoleCreationException(
+                    "Usuarios no autenticados solo pueden crear usuarios con rol CLIENTE"
+                );
+            }
+        }
         Long roleIdToCreate = roleToCreate.getId();
 
         // Si intenta crear un PROPIETARIO, debe ser ADMINISTRADOR
@@ -104,17 +116,12 @@ public class UserUseCase implements IUserServicePort {
             }
         }
 
-        // No se permite crear ADMINISTRADORES ni CLIENTES desde este endpoint
-        if (roleIdToCreate.equals(RoleEnum.ADMINISTRADOR.getRoleId())) {
+        // No se permite crear ADMINISTRADORES ni CLIENTES
+        if (roleIdToCreate.equals(RoleEnum.ADMINISTRADOR.getRoleId()) || roleIdToCreate.equals(RoleEnum.CLIENTE.getRoleId())) {
             throw new UnauthorizedRoleCreationException(
-                "No se permite crear usuarios con rol ADMINISTRADOR desde este endpoint"
+                    "No se permite crear usuarios con este rol "
             );
         }
 
-        if (roleIdToCreate.equals(RoleEnum.CLIENTE.getRoleId())) {
-            throw new UnauthorizedRoleCreationException(
-                "No se permite crear usuarios con rol CLIENTE desde este endpoint"
-            );
-        }
     }
 }

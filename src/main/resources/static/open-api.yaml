@@ -19,6 +19,8 @@ paths:
       summary: Listar todos los usuarios
       description: Obtiene la lista de todos los usuarios del sistema
       operationId: getAllUsers
+      security:
+        - bearerAuth: []
       parameters:
         - name: page
           in: query
@@ -53,6 +55,8 @@ paths:
       summary: Crear un nuevo usuario
       description: Crea un nuevo usuario en el sistema
       operationId: createUser
+      security:
+        - bearerAuth: []
       requestBody:
         description: Datos del objeto a crear
         required: true
@@ -87,6 +91,8 @@ paths:
       summary: Obtener usuario por ID
       description: Obtiene la información de un usuario específico por su ID
       operationId: getUserById
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -138,6 +144,41 @@ paths:
                 $ref: '#/components/schemas/AuthDataResponse'
         '401':
           description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/public:
+    post:
+      tags:
+        - Users
+      summary: Registro público de usuario
+      description: |
+        Permite el registro de usuarios CLIENTE sin autenticación.
+      operationId: publicRegisterUser
+      requestBody:
+        description: Datos del usuario a registrar
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '201':
+          description: Usuario registrado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDataResponse'
+        '400':
+          description: Datos inválidos o intento de registrar rol no permitido
           content:
             application/json:
               schema:
@@ -219,7 +260,6 @@ components:
         - data
         - meta
 
-    # Response para autenticación
     AuthDataResponse:
       type: object
       properties:
@@ -385,3 +425,10 @@ components:
         - userId
         - email
         - role
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Autenticación mediante token JWT. Formato: 'Bearer {token}'"

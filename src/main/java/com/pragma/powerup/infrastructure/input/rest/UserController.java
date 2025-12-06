@@ -15,16 +15,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Controller de usuarios - Capa de infraestructura (Input)
- * Responsabilidad: Recibir HTTP requests y delegar al Handler
- */
 @RestController
 @RequiredArgsConstructor
 public class UserController implements UsersApi {
 
     private final IUserHandler userHandler;
 
+    @RequireRole({RoleEnum.ADMINISTRADOR, RoleEnum.EMPLEADO, RoleEnum.PROPIETARIO})
     @Override
     public ResponseEntity<UserDataResponseDto> createUser(UserRequestDto userRequestDto) {
         UserDataResponseDto response = userHandler.createUser(userRequestDto);
@@ -47,6 +44,12 @@ public class UserController implements UsersApi {
     public ResponseEntity<UserDataResponseDto> getUserById(Long id) {
         UserDataResponseDto response = userHandler.getUserById(id);
         return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<UserDataResponseDto> publicRegisterUser(UserRequestDto userRequestDto) {
+        UserDataResponseDto response = userHandler.createUser(userRequestDto);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
 }
