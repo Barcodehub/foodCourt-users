@@ -2,6 +2,7 @@ package com.pragma.powerup.infrastructure.security.util;
 
 import com.pragma.powerup.domain.model.RoleModel;
 import com.pragma.powerup.infrastructure.security.userdetails.CustomUserDetails;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -11,10 +12,10 @@ public class SecurityContextUtil {
 
     public CustomUserDetails getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
-            return (CustomUserDetails) authentication.getPrincipal();
+        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
+            return userDetails;
         }
-        throw new RuntimeException("Usuario no autenticado");
+        throw new AuthenticationCredentialsNotFoundException("Usuario no autenticado");
     }
 
     public Long getCurrentUserId() {

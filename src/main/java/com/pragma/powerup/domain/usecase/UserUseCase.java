@@ -99,27 +99,25 @@ public class UserUseCase implements IUserServicePort {
         Long roleIdToCreate = roleToCreate.getId();
 
         // Si intenta crear un PROPIETARIO, debe ser ADMINISTRADOR
-        if (roleIdToCreate.equals(RoleEnum.PROPIETARIO.getRoleId())) {
-            if (!RoleEnum.ADMINISTRADOR.getName().equalsIgnoreCase(currentUserRole)) {
-                throw new UnauthorizedRoleCreationException(
-                    "Solo los usuarios con rol ADMINISTRADOR pueden crear usuarios PROPIETARIO"
-                );
-            }
+        if (roleIdToCreate.equals(RoleEnum.PROPIETARIO.getRoleId())
+                && !RoleEnum.ADMINISTRADOR.getName().equalsIgnoreCase(currentUserRole)) {
+            throw new UnauthorizedRoleCreationException(
+                "Solo los usuarios con rol ADMINISTRADOR pueden crear usuarios PROPIETARIO"
+            );
         }
 
         // Si intenta crear un EMPLEADO, debe ser PROPIETARIO
-        if (roleIdToCreate.equals(RoleEnum.EMPLEADO.getRoleId())) {
-            if (!RoleEnum.PROPIETARIO.getName().equalsIgnoreCase(currentUserRole)) {
-                throw new UnauthorizedRoleCreationException(
-                    "Solo los usuarios con rol PROPIETARIO pueden crear usuarios EMPLEADO"
-                );
-            }
+        if (roleIdToCreate.equals(RoleEnum.EMPLEADO.getRoleId())
+                && !RoleEnum.PROPIETARIO.getName().equalsIgnoreCase(currentUserRole)) {
+            throw new UnauthorizedRoleCreationException(
+                "Solo los usuarios con rol PROPIETARIO pueden crear usuarios EMPLEADO"
+            );
         }
 
         // No se permite crear ADMINISTRADORES ni CLIENTES
         if (roleIdToCreate.equals(RoleEnum.ADMINISTRADOR.getRoleId()) || roleIdToCreate.equals(RoleEnum.CLIENTE.getRoleId())) {
             throw new UnauthorizedRoleCreationException(
-                    "No se permite crear usuarios con este rol "
+                "No se permite crear usuarios con este rol "
             );
         }
 

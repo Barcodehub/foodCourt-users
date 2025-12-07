@@ -15,7 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -42,7 +41,7 @@ public class UserHandler implements IUserHandler {
 
         List<UserResponseDto> userResponseDtos = userPage.getContent().stream()
                 .map(userMapper::toResponseDto)
-                .collect(Collectors.toList());
+                .toList();
 
         return responseMapper.toUsersListResponse(userResponseDtos, userPage);
     }
