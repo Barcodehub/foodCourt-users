@@ -33,6 +33,7 @@ dependencies {
 	developmentOnly "org.springframework.boot:spring-boot-devtools:${springBootVersion}"
 	testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
 
+
 	implementation "org.postgresql:postgresql:${postgresqlVersion}"
 
 	implementation 'org.springframework.boot:spring-boot-starter-security:3.2.0'

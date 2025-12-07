@@ -2,7 +2,7 @@
 <div align="center">
 <h3 align="center">PRAGMA POWER-UP - USERS MICROSERVICE</h3>
   <p align="center">
-    Microservicio de gestión de usuarios y autenticación para el sistema de restaurantes. Maneja la creación de usuarios con diferentes roles, autenticación JWT y validaciones de permisos.
+    Microservicio de gestión de usuarios y autenticación para el sistema de plazoleta de comidas. Maneja la creación de usuarios con diferentes roles, autenticación JWT y validaciones de permisos.
   </p>
 </div>
 
@@ -15,17 +15,19 @@
 * ![Gradle](https://img.shields.io/badge/Gradle-02303A.svg?style=for-the-badge&logo=Gradle&logoColor=white)
 * ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 
-## Descripción
+## Descripción General
 
-Este microservicio es responsable de:
-- **Gestión de usuarios**: Creación, consulta y listado de usuarios
-- **Autenticación**: Login con JWT (JSON Web Tokens)
-- **Autorización**: Validación de roles y permisos
+Este microservicio es el núcleo de autenticación y autorización del [sistema de plazoleta de comidas]((https://github.com/Barcodehub/foodcourt)). Es responsable de:
+
+- **Gestión de usuarios**: Creación, consulta y listado de usuarios con validaciones de negocio
+- **Autenticación**: Login con JWT (JSON Web Tokens) para sesiones seguras
+- **Autorización**: Validación de roles y permisos jerárquicos
+- **Validación de identidad**: Verificación de documentos únicos, emails válidos y mayoría de edad
 - **Roles soportados**:
   - `ADMINISTRADOR`: Puede crear usuarios PROPIETARIO
-  - `PROPIETARIO`: Puede crear usuarios EMPLEADO
+  - `PROPIETARIO`: Puede crear usuarios EMPLEADO  
   - `EMPLEADO`: Personal de restaurantes
-  - `CLIENTE`: Usuarios finales
+  - `CLIENTE`: Usuarios finales que realizan pedidos
 
 ### Arquitectura
 
@@ -49,126 +51,279 @@ src/
 ```
 
 
-<!-- GETTING STARTED -->
-## Getting Started
+### Microservicio Principal
 
-To get a local copy up and running follow these steps.
+[FoodCourt](https://github.com/Barcodehub/foodcourt)
 
-### Prerequisites
 
-* JDK 17 [https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
-* Gradle [https://gradle.org/install/](https://gradle.org/install/)
-* PostgreSQL 14+ [https://www.postgresql.org/download/](https://www.postgresql.org/download/)
+## Endpoints Implementados
 
-### Recommended Tools
-* IntelliJ IDEA [https://www.jetbrains.com/idea/download/](https://www.jetbrains.com/idea/download/)
-* Postman [https://www.postman.com/downloads/](https://www.postman.com/downloads/)
-* DBeaver (para gestión de PostgreSQL) [https://dbeaver.io/download/](https://dbeaver.io/download/)
+### Autenticación
 
-### Installation
+#### `POST /auth/login`
+Iniciar sesión y obtener token JWT.
 
-1. Clone the repo
-   ```sh
+**Request Body:**
+```json
+{
+  "email": "admin@foodcourt.com",
+  "password": "admin123"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "userId": 1,
+  "role": "ADMINISTRADOR",
+  "email": "admin@foodcourt.com"
+}
+```
+
+---
+
+### Usuarios
+
+#### `POST /users`
+Crear un nuevo usuario (rol depende del usuario autenticado).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "name": "Juan",
+  "lastName": "Pérez",
+  "documentNumber": "1234567890",
+  "phoneNumber": "+573001234567",
+  "birthDate": "1990-05-15",
+  "email": "juan.perez@example.com",
+  "password": "securePassword123",
+  "roleId": 2
+}
+```
+
+**Validaciones:**
+- ADMINISTRADOR → puede crear PROPIETARIO (roleId=2)
+- PROPIETARIO → puede crear EMPLEADO (roleId=3)
+- Email y documento únicos
+- Usuario mayor de 18 años
+- Teléfono máximo 13 caracteres, puede incluir +
+- Password encriptado con BCrypt
+
+**Response (201 Created):**
+```json
+{
+  "data": {
+    "id": 5,
+    "name": "Juan",
+    "lastName": "Pérez",
+    "documentNumber": "1234567890",
+    "phoneNumber": "+573001234567",
+    "email": "juan.perez@example.com",
+    "role": "PROPIETARIO"
+  }
+}
+```
+
+---
+
+#### `GET /users`
+Listar usuarios (paginado).
+
+**Query Parameters:**
+- `page`: Número de página (default: 0)
+- `size`: Tamaño de página (default: 10)
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Admin",
+      "lastName": "User",
+      "email": "admin@foodcourt.com",
+      "role": "ADMINISTRADOR"
+    }
+  ],
+  "meta": {
+    "page": 0,
+    "size": 10,
+    "totalElements": 1,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+#### `GET /users/{id}`
+Obtener usuario por ID.
+
+**Response (200 OK):**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "Admin",
+    "lastName": "User",
+    "documentNumber": "1234567890",
+    "phoneNumber": "+573001234567",
+    "email": "admin@foodcourt.com",
+    "role": "ADMINISTRADOR"
+  }
+}
+```
+
+---
+
+#### `GET /users/validate/{userId}/{roleId}`
+Validar que un usuario tenga un rol específico (usado internamente por otros microservicios).
+
+**Response (200 OK):**
+```json
+{
+  "valid": true,
+  "userId": 5,
+  "roleId": 2,
+  "roleName": "PROPIETARIO"
+}
+```
+
+---
+
+<!-- USAGE -->
+## Pruebas Unitarias
+
+### Cobertura de Historias de Usuario
+
+Este microservicio cubre **4 Historias de Usuario** con más de **21 pruebas unitarias**:
+
+| Historia | Clase de Test | Pruebas |
+|----------|---------------|---------|
+| HU-1: Crear Propietario | `UserUseCaseTest` | ✅ Validación mayoría edad<br>✅ Validación email único<br>✅ Validación documento único |
+| HU-5: Autenticación | `AuthenticationUseCaseTest` | ✅ Login exitoso<br>✅ Credenciales inválidas<br>✅ Usuario no existe<br>✅ Generación JWT |
+| HU-6: Crear Empleado | `UserUseCaseTest` | ✅ Validación rol propietario<br>✅ Creación exitosa empleado |
+| HU-8: Crear Cliente | `UserUseCaseTest` | ✅ Creación cuenta cliente<br>✅ Validaciones generales |
+
+### Ejecutar Tests
+
+```bash
+# Todos los tests con cobertura
+./gradlew test jacocoTestReport
+
+# Ver reporte HTML
+start build/reports/tests/test/index.html
+start build/reports/jacoco/test/html/index.html
+
+# Tests específicos
+./gradlew test --tests "UserUseCaseTest"
+./gradlew test --tests "AuthenticationUseCaseTest"
+```
+
+### Tecnologías de Testing
+
+- **JUnit 5**: Framework de pruebas
+- **Mockito**: Mocking de dependencias
+- **JaCoCo**: Reporte de cobertura de código
+- **AssertJ**: Aserciones fluidas
+
+---
+
+## Cómo Ejecutar Localmente
+
+### 1. Instalación
+
+1. **Clonar el repositorio**
+   ```bash
    git clone <repository-url>
-   cd users
+   cd foodCourt-users
    ```
 
-2. Create a new database in PostgreSQL
+2. **Crear base de datos en PostgreSQL**
    ```sql
-   CREATE DATABASE powerup_users;
+   CREATE DATABASE users;
    ```
 
-3. Update the database connection settings
-   ```yml
-   # src/main/resources/application-dev.yml
+3. **Configurar conexión a base de datos**
+   
+   Editar `src/main/resources/application-dev.yml`:
+   ```yaml
    spring:
      datasource:
-       url: jdbc:postgresql://localhost:5432/powerup_users
+       url: jdbc:postgresql://localhost:5432/users
        username: postgres
-       password: your_password
+       password: tu_contraseña
    ```
 
-4. Configure environment variables (opcional)
-   ```sh
-   # Variables de entorno para JWT
+4. **Configurar variables de entorno o directamente en tu archivo application.yml**
+   ```bash
+   # JWT Configuration
    JWT_SECRET=your_secret_key_here
    JWT_EXPIRATION=86400000
    ```
 
-<!-- USAGE -->
-## Usage
+### 2. Compilar el Proyecto
 
-### Compilar y generar código
-
-Genera los DTOs e interfaces desde OpenAPI:
-```sh
+```bash
+# Generar DTOs desde OpenAPI spec
 ./gradlew openApiGenerate
-```
 
-Compila todo el proyecto:
-```sh
+# Compilar todo el proyecto
 ./gradlew clean build
 ```
 
-### Ejecutar la aplicación
+### 3. Ejecutar la Aplicación
 
-Desde terminal:
-```sh
+**Opción 1: Desde terminal**
+```bash
 ./gradlew bootRun
 ```
 
-O desde IntelliJ: Right-click PowerUpApplication → Run
+**Opción 2: Desde IntelliJ IDEA**
+- Right-click `PowerUpApplication.java` → Run
 
-La aplicación estará disponible en:
-- API: [http://localhost:8081](http://localhost:8081)
-- Swagger UI: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
-- OpenAPI spec: [http://localhost:8081/api-docs](http://localhost:8081/api-docs)
 
-### Endpoints Principales
+### 4. Datos Iniciales
 
-#### Autenticación
-- `POST /auth/login` - Iniciar sesión (retorna JWT)
+- Ejecutar el archivo **init-roles.sql** en tu base de datos para crear los roles iniciales y autoinsertar el usuario administrador
+```sql
+INSERT INTO roles (id, name, description) VALUES
+                                              (1, 'ADMINISTRADOR', 'Administrador de la plataforma de plazoleta de comidas'),
+                                              (2, 'PROPIETARIO', 'Propietario de un restaurante'),
+                                              (3, 'EMPLEADO', 'Empleado de un restaurante'),
+                                              (4, 'CLIENTE', 'Cliente de la plazoleta de comidas')
+    ON CONFLICT (name) DO NOTHING;
 
-#### Usuarios
-- `POST /users` - Crear usuario (requiere rol específico)
-- `GET /users` - Listar usuarios (paginado)
-- `GET /users/{id}` - Obtener usuario por ID
+-- Crear usuario administrador inicial
+INSERT INTO users (
+    id, name, last_name, password, email, identification_document, phone_number, birth_date, role_id, created_at
+) VALUES (
+             1,
+             'Admin',
+             'Sistema',
+             '$2a$10$p4a7VE8q0enYsvh2WMn1mO.LulXkflkDZSbHLVX.Lr8T5lW3EmfB6',
+             'admin@admin.com',
+             '1234567890',
+             '+573001234567',
+             '1990-01-01',
+             1,
+             NOW()
+         ) ON CONFLICT (email) DO NOTHING;
 
-### Reglas de Negocio
-
-#### Creación de Usuarios
-- **ADMINISTRADOR** → puede crear **PROPIETARIO**
-- **PROPIETARIO** → puede crear **EMPLEADO**
-- No se permite crear ADMINISTRADOR ni CLIENTE desde el endpoint `/users`
-
-#### Validaciones
-- Los usuarios deben ser mayores de 18 años
-- Email único en el sistema
-- Documento de identidad único
-- Contraseña mínima de 8 caracteres
-
-### Desarrollo API-First
-
-1. **Edita** el schema en `src/main/resources/static/open-api.yaml`
-2. **Genera** los DTOs: `./gradlew openApiGenerate`
-3. **Implementa** las interfaces generadas en los controladores
-4. **Mapea** entre DTOs y modelos de dominio con MapStruct
-
-Ejemplo de flujo:
-```
-open-api.yaml → openApiGenerate → DTOs generados → 
-Controller (implementa interfaz) → Handler → UseCase → Domain
+SELECT setval('roles_id_seq', 4, true);
 ```
 
-<!-- ROADMAP -->
-## Tests
+### 5. Credenciales de Acceso luego de ejecutar el script SQL
+- Email: admin@admin.com
+- Contraseña: Admin123
 
-Run tests with coverage:
-```sh
-./gradlew test jacocoTestReport
-```
-
-O desde IntelliJ: Right-click test folder → Run tests with coverage
+---
 
 ### Seguridad
 
@@ -188,34 +343,15 @@ El microservicio usa JWT para autenticación y autorización:
 4. Cliente incluye token en header: `Authorization: Bearer <token>`
 5. Sistema valida token en cada request
 
-#### Roles y Permisos
+---
 
-| Rol | Puede crear | Endpoints permitidos |
-|-----|------------|---------------------|
-| ADMINISTRADOR | PROPIETARIO | POST /users (roleId=2) |
-| PROPIETARIO | EMPLEADO | POST /users (roleId=3) |
-| EMPLEADO | - | - |
-| CLIENTE | - | - |
+## Autor
 
-### Arquitectura Hexagonal
+**Brayan Barco**
 
-**Capas:**
-- **Domain**: Lógica de negocio pura, sin dependencias externas
-- **Application**: Orquestación y transformación de datos
-- **Infrastructure**: Adaptadores (REST, JPA, Security)
+## Licencia
 
-**Puertos:**
-- **API (Entrada)**: `IUserServicePort`, `IAuthenticationServicePort`
-- **SPI (Salida)**: `IUserPersistencePort`, `IPasswordEncoderPort`, `ISecurityContextPort`
+Este proyecto es parte de la prueba técnica de Pragma.
 
-**Beneficios:**
-- ✅ Testeable (dominio independiente)
-- ✅ Mantenible (separación de responsabilidades)
-- ✅ Flexible (fácil cambio de BD o framework)
-
-### Documentación Adicional
-
-- [VALIDACIONES_ROLES_CREATEUSER.md](VALIDACIONES_ROLES_CREATEUSER.md) - Detalles de validaciones de roles
-- [IMPLEMENTACION_COMPLETADA.md](IMPLEMENTACION_COMPLETADA.md) - Guía de implementación completa
 
 
