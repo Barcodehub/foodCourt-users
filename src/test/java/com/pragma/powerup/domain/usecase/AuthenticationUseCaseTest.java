@@ -18,11 +18,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-/**
- * Pruebas unitarias para AuthenticationUseCase
- * Cubre la siguiente Historia de Usuario:
- * - HU5: Autenticación al sistema
- */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuthenticationUseCase - Autenticación de Usuarios")
 class AuthenticationUseCaseTest {
@@ -56,13 +51,10 @@ class AuthenticationUseCaseTest {
         @Test
         @DisplayName("Happy Path: Debe autenticar usuario con credenciales válidas")
         void shouldAuthenticateUserWithValidCredentials() {
-            // Arrange
             when(authenticationPort.authenticate(any(LoginRequest.class))).thenReturn(validAuthResponse);
 
-            // Act
             AuthResponse result = authenticationUseCase.login(validLoginRequest);
 
-            // Assert
             assertNotNull(result);
             assertNotNull(result.getToken());
             assertEquals("user@example.com", result.getEmail());
@@ -76,12 +68,10 @@ class AuthenticationUseCaseTest {
         @Test
         @DisplayName("Validación: Debe rechazar credenciales inválidas")
         void shouldThrowExceptionWhenCredentialsAreInvalid() {
-            // Arrange
             LoginRequest invalidRequest = new LoginRequest("user@example.com", "wrongPassword");
             when(authenticationPort.authenticate(any(LoginRequest.class)))
                     .thenThrow(new BadCredentialsException("Credenciales inválidas"));
 
-            // Act & Assert
             assertThrows(BadCredentialsException.class, () -> authenticationUseCase.login(invalidRequest));
             verify(authenticationPort, times(1)).authenticate(invalidRequest);
         }
@@ -89,12 +79,10 @@ class AuthenticationUseCaseTest {
         @Test
         @DisplayName("Error: Debe rechazar usuario no existente")
         void shouldThrowExceptionWhenUserDoesNotExist() {
-            // Arrange
             LoginRequest nonExistentUserRequest = new LoginRequest("nonexistent@example.com", "password123");
             when(authenticationPort.authenticate(any(LoginRequest.class)))
                     .thenThrow(new BadCredentialsException("Credenciales inválidas"));
 
-            // Act & Assert
             BadCredentialsException exception = assertThrows(
                     BadCredentialsException.class,
                     () -> authenticationUseCase.login(nonExistentUserRequest)
@@ -112,7 +100,6 @@ class AuthenticationUseCaseTest {
         @Test
         @DisplayName("Validación: Debe autenticar diferentes roles correctamente")
         void shouldAuthenticateDifferentRoles() {
-            // Arrange - Propietario
             RoleModel ownerRole = new RoleModel(2L, "PROPIETARIO", "Owner");
             AuthResponse ownerAuthResponse = new AuthResponse(
                     "ownerToken",
@@ -124,10 +111,8 @@ class AuthenticationUseCaseTest {
 
             when(authenticationPort.authenticate(ownerLogin)).thenReturn(ownerAuthResponse);
 
-            // Act
             AuthResponse result = authenticationUseCase.login(ownerLogin);
 
-            // Assert
             assertNotNull(result);
             assertEquals("PROPIETARIO", result.getRole().getName());
             assertEquals(2L, result.getUserId());
@@ -136,7 +121,6 @@ class AuthenticationUseCaseTest {
         @Test
         @DisplayName("Validación: Debe autenticar empleado correctamente")
         void shouldAuthenticateEmployee() {
-            // Arrange
             RoleModel employeeRole = new RoleModel(3L, "EMPLEADO", "Employee");
             AuthResponse employeeAuthResponse = new AuthResponse(
                     "employeeToken",
@@ -148,10 +132,8 @@ class AuthenticationUseCaseTest {
 
             when(authenticationPort.authenticate(employeeLogin)).thenReturn(employeeAuthResponse);
 
-            // Act
             AuthResponse result = authenticationUseCase.login(employeeLogin);
 
-            // Assert
             assertNotNull(result);
             assertEquals("EMPLEADO", result.getRole().getName());
         }
@@ -159,37 +141,30 @@ class AuthenticationUseCaseTest {
         @Test
         @DisplayName("Error: Debe fallar con email vacío")
         void shouldFailWithEmptyEmail() {
-            // Arrange
             LoginRequest emptyEmailRequest = new LoginRequest("", "password123");
             when(authenticationPort.authenticate(any(LoginRequest.class)))
                     .thenThrow(new BadCredentialsException("Credenciales inválidas"));
 
-            // Act & Assert
             assertThrows(BadCredentialsException.class, () -> authenticationUseCase.login(emptyEmailRequest));
         }
 
         @Test
         @DisplayName("Error: Debe fallar con password vacío")
         void shouldFailWithEmptyPassword() {
-            // Arrange
             LoginRequest emptyPasswordRequest = new LoginRequest("user@example.com", "");
             when(authenticationPort.authenticate(any(LoginRequest.class)))
                     .thenThrow(new BadCredentialsException("Credenciales inválidas"));
 
-            // Act & Assert
             assertThrows(BadCredentialsException.class, () -> authenticationUseCase.login(emptyPasswordRequest));
         }
 
         @Test
         @DisplayName("Validación: Token JWT debe tener formato correcto")
         void shouldReturnValidJwtTokenFormat() {
-            // Arrange
             when(authenticationPort.authenticate(any(LoginRequest.class))).thenReturn(validAuthResponse);
 
-            // Act
             AuthResponse result = authenticationUseCase.login(validLoginRequest);
 
-            // Assert
             assertNotNull(result.getToken());
             assertFalse(result.getToken().isEmpty());
             assertTrue(result.getToken().contains("."), "JWT token should contain dots");
@@ -203,14 +178,11 @@ class AuthenticationUseCaseTest {
         @Test
         @DisplayName("Edge Case: Email con mayúsculas debe funcionar")
         void shouldAuthenticateWithUppercaseEmail() {
-            // Arrange
             LoginRequest upperCaseEmailRequest = new LoginRequest("USER@EXAMPLE.COM", "password123");
             when(authenticationPort.authenticate(any(LoginRequest.class))).thenReturn(validAuthResponse);
 
-            // Act
             AuthResponse result = authenticationUseCase.login(upperCaseEmailRequest);
 
-            // Assert
             assertNotNull(result);
             verify(authenticationPort, times(1)).authenticate(upperCaseEmailRequest);
         }
@@ -218,14 +190,11 @@ class AuthenticationUseCaseTest {
         @Test
         @DisplayName("Edge Case: Password con caracteres especiales debe funcionar")
         void shouldAuthenticateWithSpecialCharactersInPassword() {
-            // Arrange
             LoginRequest specialCharsPassword = new LoginRequest("user@example.com", "P@ssw0rd!#$%");
             when(authenticationPort.authenticate(any(LoginRequest.class))).thenReturn(validAuthResponse);
 
-            // Act
             AuthResponse result = authenticationUseCase.login(specialCharsPassword);
 
-            // Assert
             assertNotNull(result);
             verify(authenticationPort, times(1)).authenticate(specialCharsPassword);
         }
@@ -233,22 +202,17 @@ class AuthenticationUseCaseTest {
         @Test
         @DisplayName("Edge Case: Debe manejar múltiples intentos fallidos")
         void shouldHandleMultipleFailedAttempts() {
-            // Arrange
             LoginRequest invalidRequest = new LoginRequest("user@example.com", "wrongPassword");
             when(authenticationPort.authenticate(any(LoginRequest.class)))
                     .thenThrow(new BadCredentialsException("Credenciales inválidas"));
 
-            // Act & Assert - Primer intento
             assertThrows(BadCredentialsException.class, () -> authenticationUseCase.login(invalidRequest));
 
-            // Act & Assert - Segundo intento
             assertThrows(BadCredentialsException.class, () -> authenticationUseCase.login(invalidRequest));
 
-            // Act & Assert - Tercer intento
             assertThrows(BadCredentialsException.class, () -> authenticationUseCase.login(invalidRequest));
 
             verify(authenticationPort, times(3)).authenticate(invalidRequest);
         }
     }
 }
-
