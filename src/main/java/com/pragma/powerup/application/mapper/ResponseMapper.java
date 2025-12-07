@@ -10,24 +10,14 @@ import org.springframework.data.domain.Page;
 
 import java.util.List;
 
-/**
- * Responsable de construir los wrappers de respuesta (data + meta)
- * Separa la lógica de construcción de DTOs del Handler
- * Usa MapStruct para generación automática de código
- */
 @Mapper(componentModel = "spring")
 public interface ResponseMapper {
 
-    /**
-     * Envuelve un UserResponseDto en un wrapper UserDataResponseDto
-     */
+
     @Mapping(target = "data", source = "userResponseDto")
     UserDataResponseDto toUserDataResponse(UserResponseDto userResponseDto);
 
-    /**
-     * Envuelve una lista de usuarios con metadata de paginación
-     * Usa método default para lógica personalizada de Page
-     */
+    // Envuelver una lista de usuarios con metadata de paginación
     default UsersListResponseDto toUsersListResponse(List<UserResponseDto> users, Page<?> page) {
         PaginationMetaDto meta = toPaginationMeta(page);
 
@@ -37,9 +27,7 @@ public interface ResponseMapper {
         return response;
     }
 
-    /**
-     * Extrae metadata de paginación desde un Page de Spring Data
-     */
+    // Extraer metadata de paginación desde un Page de Spring Data
     default PaginationMetaDto toPaginationMeta(Page<?> page) {
         if (page == null) {
             return null;

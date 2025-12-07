@@ -45,7 +45,7 @@ public class ControllerAdvisor {
         response.put(TIMESTAMP, LocalDateTime.now());
         response.put(STATUS, HttpStatus.BAD_REQUEST.value());
         response.put(ERROR, "User Underage");
-        response.put(MESSAGE, exception.getMessage()); // Usa el mensaje personalizado con la edad
+        response.put(MESSAGE, exception.getMessage());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
@@ -56,11 +56,9 @@ public class ControllerAdvisor {
         Map<String, Object> response = new HashMap<>();
         response.put(TIMESTAMP, LocalDateTime.now());
 
-        // Obtener el mensaje más específico de la causa raíz
         String message = exception.getMostSpecificCause().getMessage();
         HttpStatus status = HttpStatus.CONFLICT;
 
-        // Si es un error de NOT NULL, cambiar el status a BAD_REQUEST
         if (message != null && (message.toLowerCase().contains("not null") || message.toLowerCase().contains("no nulo"))) {
             status = HttpStatus.BAD_REQUEST;
         }
@@ -158,7 +156,6 @@ public class ControllerAdvisor {
         response.put(ERROR, HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
         response.put(MESSAGE, ExceptionResponse.INTERNAL_SERVER_ERROR.getMessage());
 
-        // Log the actual exception for debugging (no exponer al cliente)
         exception.printStackTrace();
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

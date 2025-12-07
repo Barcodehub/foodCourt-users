@@ -24,7 +24,7 @@ appVersion: "1.0.0"
 # Configuración de JWT
 jwt:
   secret: ${JWT_SECRET:mySecretKeyForJWTTokenGenerationPragmaPowerUp2024SecureKey}
-  expiration: ${JWT_EXPIRATION:60000}  # 24 horas en milisegundos
+  expiration: ${JWT_EXPIRATION:86400000}  # 24 horas en milisegundos
 
 # Configuración de SpringDoc OpenAPI
 springdoc:

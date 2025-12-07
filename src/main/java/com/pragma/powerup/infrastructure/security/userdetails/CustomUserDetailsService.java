@@ -21,7 +21,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         UserEntity userEntity = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + email));
 
-        // Convertir RoleEntity a RoleModel
         RoleEntity roleEntity = userEntity.getRole();
         RoleModel roleModel = new RoleModel();
         roleModel.setId(roleEntity.getId());

@@ -7,9 +7,6 @@ import lombok.Setter;
 
 import java.util.List;
 
-/**
- * Wrapper para respuestas paginadas
- */
 @Getter
 @Setter
 @AllArgsConstructor

@@ -17,10 +17,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Handler de usuarios - Capa de aplicación
- * Responsabilidad: Coordinar entre el dominio y la presentación
- */
 @Service
 @AllArgsConstructor
 public class UserHandler implements IUserHandler {

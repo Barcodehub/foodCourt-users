@@ -39,7 +39,7 @@ public class UserController implements UsersApi {
         return ResponseEntity.ok(response);
     }
 
-    @RequireRole({RoleEnum.ADMINISTRADOR, RoleEnum.EMPLEADO})
+    @RequireRole({RoleEnum.ADMINISTRADOR, RoleEnum.EMPLEADO, RoleEnum.PROPIETARIO, RoleEnum.CLIENTE})
     @Override
     public ResponseEntity<UserDataResponseDto> getUserById(Long id) {
         UserDataResponseDto response = userHandler.getUserById(id);

@@ -13,10 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Handler de autenticación - Capa de aplicación
- * Responsabilidad: Coordinar entre el dominio y la presentación
- */
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -28,16 +24,10 @@ public class AuthenticationHandler implements IAuthenticationHandler {
 
     @Override
     public AuthDataResponseDto login(LoginRequestDto loginRequestDto) {
-        // 1. Mapear DTO → Domain
         LoginRequest loginRequest = authMapper.toDto(loginRequestDto);
-
-        // 2. Ejecutar lógica de autenticación
         AuthResponse authResponse = authenticationServicePort.login(loginRequest);
-
-        // 3. Mapear Domain → DTO
         AuthResponseDto authResponseDto = authMapper.toResponseDto(authResponse);
 
-        // 4. Envolver en response (delegado a AuthResponseMapper)
         return authResponseMapper.toAuthDataResponse(authResponseDto);
     }
 }

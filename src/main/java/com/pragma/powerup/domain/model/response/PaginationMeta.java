@@ -5,9 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Metadatos de paginación
- */
 @Getter
 @Setter
 @AllArgsConstructor

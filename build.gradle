@@ -35,10 +35,8 @@ dependencies {
 
 	implementation "org.postgresql:postgresql:${postgresqlVersion}"
 
-	// Spring Security
 	implementation 'org.springframework.boot:spring-boot-starter-security:3.2.0'
 
-	// JWT
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
@@ -135,7 +133,7 @@ sourceSets {
 // Configurar IntelliJ IDEA para reconocer correctamente las carpetas generadas
 idea {
 	module {
-		// Marcar la carpeta build como excluida (aparecerá en naranja)
+		// Marcar la carpeta build como excluida
 		excludeDirs += file("${buildDir}")
 		excludeDirs -= file("${buildDir}/generated")
 		// Marcar el paquete generado
