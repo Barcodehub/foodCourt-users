@@ -98,11 +98,11 @@ Authorization: Bearer <token>
 {
   "name": "Juan",
   "lastName": "Pérez",
-  "documentNumber": "1234567890",
-  "phoneNumber": "+573001234567",
-  "birthDate": "1990-05-15",
-  "email": "juan.perez@example.com",
-  "password": "securePassword123",
+  "password": "MiClaveSegura123",
+  "email": "juanpere07@email.com",
+  "identificationDocument": "1348917990",
+  "phoneNumber": "+57j3005698325",
+  "birthDate": "2000-01-01",
   "roleId": 2
 }
 ```
@@ -182,8 +182,8 @@ Obtener usuario por ID.
 
 ---
 
-#### `GET /users/validate/{userId}/{roleId}`
-Validar que un usuario tenga un rol específico (usado internamente por otros microservicios).
+#### `GET /users/public`
+Registro publico, un CLIENTE puede registrarse sin autenticación.
 
 **Response (200 OK):**
 ```json
